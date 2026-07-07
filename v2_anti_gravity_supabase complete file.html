@@ -1,0 +1,1892 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antigravity Tasks - Premium Task Manager</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Supabase client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        /* ==========================================================================
+           CSS DESIGN SYSTEM & THEMING
+           ========================================================================== */
+        :root {
+            /* Theme: Dark (Default) */
+            --bg-base: #0f172a;
+            --bg-panel: rgba(30, 41, 59, 0.7);
+            --border-panel: rgba(255, 255, 255, 0.08);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --input-bg: rgba(15, 23, 42, 0.6);
+            --input-border: rgba(255, 255, 255, 0.1);
+            --input-focus-border: #6366f1;
+            --shadow-primary: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            --shadow-hover: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+
+            /* Accents */
+            --accent-primary: #6366f1;
+            --accent-secondary: #8b5cf6;
+            --accent-gradient: linear-gradient(135deg, #6366f1, #8b5cf6);
+            --accent-glow: rgba(99, 102, 241, 0.15);
+
+            /* Priority Colors */
+            --prio-high: #ef4444;
+            --prio-medium: #f97316;
+            --prio-low: #10b981;
+
+            /* Utilities */
+            --radius-lg: 16px;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --radius-round: 9999px;
+            --transition-smooth: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        body.light-theme {
+            /* Theme: Light */
+            --bg-base: #f1f5f9;
+            --bg-panel: rgba(255, 255, 255, 0.85);
+            --border-panel: rgba(0, 0, 0, 0.08);
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --input-bg: rgba(255, 255, 255, 0.9);
+            --input-border: rgba(0, 0, 0, 0.1);
+            --input-focus-border: #4f46e5;
+            --shadow-primary: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
+            --accent-glow: rgba(99, 102, 241, 0.08);
+        }
+
+        /* Base Resets */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        /* Layout Wrapper */
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        @media (max-width: 900px) {
+            .app-container {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+        }
+
+        /* Reusable Glass Panel */
+        .glass-panel {
+            background: var(--bg-panel);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-primary);
+            transition: var(--transition-smooth);
+        }
+
+        .glass-panel:hover {
+            box-shadow: var(--shadow-hover);
+        }
+
+        /* ==========================================================================
+           HEADER COMPONENTS
+           ========================================================================== */
+        header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            background: var(--accent-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .kbd-guide {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: var(--input-bg);
+            padding: 0.4rem 0.8rem;
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-panel);
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .kbd-key {
+            background: var(--text-muted);
+            color: var(--bg-base);
+            padding: 0.1rem 0.3rem;
+            border-radius: 4px;
+            font-family: monospace;
+            font-weight: bold;
+        }
+
+        .theme-toggle-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--border-panel);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .theme-toggle-btn:hover {
+            border-color: var(--accent-primary);
+            transform: scale(1.05);
+        }
+
+        /* ==========================================================================
+           SIDEBAR (GOALS & TARGETS)
+           ========================================================================== */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .goals-section h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .goals-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .goal-item {
+            background: var(--input-bg);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-md);
+            padding: 0.85rem;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+
+        .goal-item:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .goal-title {
+            font-weight: 500;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            word-break: break-word;
+            padding-right: 1.5rem;
+        }
+
+        .goal-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .goal-progress {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-bar-bg {
+            flex-grow: 1;
+            height: 6px;
+            background: var(--bg-base);
+            border-radius: var(--radius-round);
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent-gradient);
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .goal-delete-btn {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            opacity: 0;
+            transition: var(--transition-smooth);
+        }
+
+        .goal-item:hover .goal-delete-btn {
+            opacity: 1;
+        }
+
+        .goal-delete-btn:hover {
+            color: var(--prio-high);
+        }
+
+        /* Goal Input Form */
+        .add-goal-form {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            border-top: 1px solid var(--border-panel);
+            padding-top: 1rem;
+        }
+
+        .add-goal-form input {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+        }
+
+        .add-goal-form input:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+        }
+
+        .add-goal-form select {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 0.6rem 0.8rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            cursor: pointer;
+        }
+
+        .add-inline-goal-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            transition: var(--transition-smooth);
+            padding: 0.25rem 0;
+            outline: none;
+        }
+
+        .add-inline-goal-btn:hover {
+            color: var(--accent-primary);
+        }
+
+        .goal-item-v2 {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            padding: 0.35rem 0;
+            position: relative;
+            transition: var(--transition-smooth);
+        }
+
+        .goal-bullet {
+            color: var(--text-muted);
+            cursor: pointer;
+            font-weight: bold;
+            transition: var(--transition-smooth);
+            display: inline-block;
+            width: 20px;
+            text-align: left;
+            user-select: none;
+        }
+
+        .goal-bullet:hover {
+            color: var(--prio-high);
+        }
+
+        .goal-item-v2:hover .goal-bullet::before {
+            content: "✕";
+            color: var(--prio-high);
+        }
+
+        .goal-bullet::before {
+            content: "○";
+        }
+
+        .goal-limit-warning {
+            color: var(--prio-medium);
+            font-size: 0.75rem;
+            margin-top: 0.5rem;
+            display: none;
+        }
+
+        /* ==========================================================================
+           MAIN CONTENT AREA
+           ========================================================================== */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Always Visible Top Add Task Bar */
+        .quick-add-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .task-title-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .main-task-input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 0.9rem 1.2rem;
+            border-radius: var(--radius-md);
+            font-size: 1.05rem;
+            transition: var(--transition-smooth);
+            padding-right: 80px;
+            /* Space for NLP badge indicator */
+        }
+
+        .main-task-input:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        .nlp-active-badge {
+            position: absolute;
+            right: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--accent-gradient);
+            color: white;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: none;
+            /* Shown dynamically */
+            pointer-events: none;
+        }
+
+        /* Advanced Options Row */
+        .options-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .option-field {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            min-height: 36px;
+        }
+
+        .option-field:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+        }
+
+        input[type="date"].option-field {
+            min-width: 130px;
+        }
+
+        .tags-field {
+            flex-grow: 1;
+            min-width: 150px;
+        }
+
+        .nlp-toggle-btn {
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            color: var(--text-secondary);
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: var(--transition-smooth);
+            min-height: 36px;
+        }
+
+        .nlp-toggle-btn.active {
+            background: var(--accent-glow);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        /* Filters & Active Tags Header */
+        .filter-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-panel);
+            padding-bottom: 0.75rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .filter-tab {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: var(--radius-sm);
+            transition: var(--transition-smooth);
+        }
+
+        .filter-tab:hover {
+            color: var(--text-primary);
+            background: var(--input-bg);
+        }
+
+        .filter-tab.active {
+            color: white;
+            background: var(--accent-gradient);
+        }
+
+        /* Active Tag Indicator */
+        .active-tag-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--accent-glow);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 0.35rem 0.75rem;
+            border-radius: var(--radius-round);
+            font-size: 0.8rem;
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        .clear-tag-btn {
+            background: transparent;
+            border: none;
+            color: var(--accent-primary);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            font-weight: bold;
+        }
+
+        /* ==========================================================================
+           TASK LIST ITEMS
+           ========================================================================== */
+        .task-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .task-row {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            gap: 1rem;
+            align-items: center;
+            background: var(--input-bg);
+            border: 1px solid var(--border-panel);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            transition: var(--transition-smooth);
+            position: relative;
+        }
+
+        .task-row:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            transform: translateY(-1px);
+        }
+
+        /* Keyboard Focus Outline */
+        .task-row.keyboard-focused {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        /* Custom Styled Checkbox */
+        .checkbox-container {
+            display: block;
+            position: relative;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checkbox-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 22px;
+            width: 22px;
+            background-color: transparent;
+            border: 2px solid var(--text-muted);
+            border-radius: var(--radius-round);
+            transition: var(--transition-smooth);
+        }
+
+        .checkbox-container:hover input~.checkmark {
+            border-color: var(--accent-primary);
+        }
+
+        .checkbox-container input:checked~.checkmark {
+            background: var(--accent-gradient);
+            border-color: transparent;
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 7px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .checkbox-container input:checked~.checkmark:after {
+            display: block;
+        }
+
+        /* Title & In-Place Editing */
+        .task-content-col {
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            min-width: 0;
+            /* Prevents overflow of flex items */
+        }
+
+        .task-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .task-title {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            word-break: break-word;
+            transition: var(--transition-smooth);
+        }
+
+        .task-title:hover {
+            color: var(--accent-primary);
+            text-decoration: underline;
+        }
+
+        /* Inline Text Area Edit Input */
+        .inline-edit-input {
+            width: 100%;
+            background: var(--bg-base);
+            border: 1px solid var(--accent-primary);
+            color: var(--text-primary);
+            padding: 0.4rem 0.6rem;
+            border-radius: var(--radius-sm);
+            font-size: 1rem;
+            font-weight: 500;
+            outline: none;
+        }
+
+        /* Completed Strikethrough style */
+        .task-row.completed .task-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Meta Indicators Row */
+        .task-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.5rem;
+            border-radius: var(--radius-round);
+            font-weight: 500;
+        }
+
+        /* Priority Dot Badge */
+        .prio-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-panel);
+        }
+
+        .prio-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .prio-dot.high {
+            background-color: var(--prio-high);
+        }
+
+        .prio-dot.medium {
+            background-color: var(--prio-medium);
+        }
+
+        .prio-dot.low {
+            background-color: var(--prio-low);
+        }
+
+        /* Due Date Badge */
+        .date-badge {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-panel);
+        }
+
+        .date-badge.overdue {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--prio-high);
+            border-color: rgba(239, 68, 68, 0.3);
+            font-weight: bold;
+        }
+
+        /* Tag Badge */
+        .tag-badge {
+            background: rgba(99, 102, 241, 0.08);
+            color: var(--accent-primary);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+        }
+
+        .tag-badge:hover {
+            background: var(--accent-primary);
+            color: white;
+        }
+
+        /* Goal Match Link Badge */
+        .goal-link-badge {
+            background: rgba(139, 92, 246, 0.08);
+            color: var(--accent-secondary);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+        }
+
+        /* Actions Column (Trash, Edit) */
+        .task-actions-col {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .task-action-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.4rem;
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition-smooth);
+            opacity: 0.4;
+            /* Softly faded by default, becomes opaque on hover */
+        }
+
+        .task-row:hover .task-action-btn {
+            opacity: 0.8;
+        }
+
+        .task-action-btn:hover {
+            color: var(--text-primary);
+            background: var(--input-bg);
+            opacity: 1 !important;
+        }
+
+        .task-action-btn.delete-btn:hover {
+            color: var(--prio-high);
+            background: rgba(239, 68, 68, 0.08);
+        }
+
+        /* ==========================================================================
+           EMPTY STATE STYLING
+           ========================================================================== */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+
+        .empty-state svg {
+            margin-bottom: 1.5rem;
+            color: var(--text-muted);
+            opacity: 0.6;
+        }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .empty-state p {
+            font-size: 0.9rem;
+            max-width: 300px;
+        }
+    </style>
+</head>
+
+<body class="dark-theme">
+
+    <div class="app-container">
+
+        <!-- ==========================================================================
+             HEADER
+             ========================================================================== -->
+        <header>
+            <h1>
+                <!-- Custom SVG Checkmark Icon -->
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1;">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+                Antigravity Tasks
+            </h1>
+            <div class="header-actions">
+                <div class="kbd-guide">
+                    Add: <span class="kbd-key">/</span> | Nav: <span class="kbd-key">↑</span><span
+                        class="kbd-key">↓</span> | Toggle: <span class="kbd-key">Enter</span>
+                </div>
+                <button class="theme-toggle-btn" id="theme-toggle" title="Toggle Theme" aria-label="Toggle Theme">
+                    <!-- Moon Icon (Dark Mode Default) -->
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- ==========================================================================
+             SIDEBAR: GOALS
+             ========================================================================== -->
+        <aside class="sidebar">
+            <div class="glass-panel goals-section-v2"
+                style="padding: 1.25rem; display: flex; flex-direction: column; gap: 1rem; border: 1px solid var(--border-panel); border-radius: var(--radius-lg); background: var(--bg-panel); box-shadow: var(--shadow-primary);">
+
+                <!-- Weekly Goals Group -->
+                <div class="goal-group" id="weekly-goal-group">
+                    <h3
+                        style="font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+                        <span>🎯</span> This Week
+                    </h3>
+                    <ul class="goal-list-v2" id="weekly-goals-list"
+                        style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem;">
+                        <!-- Weekly goals list rendered here -->
+                    </ul>
+                    <div id="add-week-goal-trigger-container">
+                        <button class="add-inline-goal-btn" onclick="showInlineGoalInput('week')">
+                            [+ add weekly goal]
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Divider Line -->
+                <div style="border-top: 1px solid var(--border-panel); margin: 0.25rem 0;"></div>
+
+                <!-- Monthly Goals Group -->
+                <div class="goal-group" id="monthly-goal-group">
+                    <h3
+                        style="font-size: 1rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.75rem; color: var(--text-primary);">
+                        <span>🗓️</span> This Month
+                    </h3>
+                    <ul class="goal-list-v2" id="monthly-goals-list"
+                        style="list-style: none; display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 0.5rem;">
+                        <!-- Monthly goals list rendered here -->
+                    </ul>
+                    <div id="add-month-goal-trigger-container">
+                        <button class="add-inline-goal-btn" onclick="showInlineGoalInput('month')">
+                            [+ add monthly goal]
+                        </button>
+                    </div>
+                </div>
+
+                <div class="goal-limit-warning" id="goal-limit-warning"
+                    style="color: var(--prio-medium); font-size: 0.75rem; display: none; margin-top: 0.5rem;">
+                    ⚠️ Goal limit (Max 5) reached.
+                </div>
+            </div>
+        </aside>
+
+        <!-- ==========================================================================
+             MAIN CONTENT: TASK MANAGER
+             ========================================================================== -->
+        <main class="main-content">
+            <!-- Add Task Panel -->
+            <div class="glass-panel quick-add-container">
+                <div class="input-row">
+                    <div class="task-title-input-wrapper">
+                        <input type="text" id="task-title-input" class="main-task-input"
+                            placeholder="Add a task... Press '/' or 'n' to focus" autocomplete="off">
+                        <span class="nlp-active-badge" id="nlp-badge">NLP ON</span>
+                    </div>
+                </div>
+
+                <!-- Option Selectors & NLP Mode Toggle -->
+                <div class="options-row">
+                    <!-- Due Date Picker -->
+                    <input type="date" id="task-due-date-input" class="option-field" title="Select due date"
+                        placeholder="Due Date">
+
+                    <!-- Priority Selector -->
+                    <select id="task-priority-input" class="option-field" title="Select priority">
+                        <option value="low">Low Priority</option>
+                        <option value="medium" selected>Medium Priority</option>
+                        <option value="high">High Priority</option>
+                    </select>
+
+                    <!-- Goal Linker Selector -->
+                    <select id="task-goal-input" class="option-field" title="Link to focus goal">
+                        <option value="">No Goal</option>
+                    </select>
+
+                    <!-- Tags CSV Field -->
+                    <input type="text" id="task-tags-input" class="option-field tags-field"
+                        placeholder="tags: work, personal, critical" title="Comma-separated tags">
+
+                    <!-- NLP Toggle Switch -->
+                    <button class="nlp-toggle-btn" id="nlp-toggle" type="button"
+                        title="Toggle local natural language processing (auto-parses tags, dates, priorities as you type)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        NLP Capture
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="filter-bar">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" id="filter-all" onclick="setFilter('all')">All</button>
+                    <button class="filter-tab" id="filter-active" onclick="setFilter('active')">Active</button>
+                    <button class="filter-tab" id="filter-completed" onclick="setFilter('completed')">Completed</button>
+                </div>
+
+                <!-- Active Tag Filter Banner -->
+                <div id="active-tag-banner-container">
+                    <!-- Rendered dynamically if a tag filter is active -->
+                </div>
+            </div>
+
+            <!-- Task List Container -->
+            <div class="task-list-outer-container">
+                <ul class="task-list" id="task-list-element">
+                    <!-- Tasks will be rendered here dynamically -->
+                </ul>
+            </div>
+        </main>
+        <script>
+            // ==========================================================================
+            // 1. STATE LAYER & DATA MODELS
+            // ==========================================================================
+            const STORAGE_KEY = 'antigravity_task_manager_state';
+
+            let state = {
+                tasks: [],
+                goals: [],
+                activeFilter: 'all',       // 'all' | 'active' | 'completed'
+                activeTagFilter: null,     // string | null
+                editingTaskId: null,       // string | null (id of task being edited)
+                selectedTaskIndex: -1,     // number (keyboard navigation cursor)
+                nlpEnabled: false,         // boolean (real-time NLP extraction toggled)
+                theme: 'dark'              // 'dark' | 'light'
+            };
+
+            // ==========================================================================
+            // SUPABASE CLIENT & CLOUD SYNC
+            // ==========================================================================
+            // TODO: paste your FULL publishable key from Supabase → Settings → API Keys
+            const SUPABASE_URL = 'https://pptmhqlfiecinxvzvlsu.supabase.co';
+            const SUPABASE_KEY = 'sb_publishable_1wDrAZ15pzWJF8nE0_w72Q_-CZcRbxC';
+            const db = (SUPABASE_URL && SUPABASE_KEY && SUPABASE_KEY !== 'PASTE_YOUR_FULL_PUBLISHABLE_KEY_HERE')
+                ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
+                : null;
+
+            // --- Mapping helpers: DB rows (snake_case) <-> app objects (camelCase) ---
+            function taskFromDB(row) {
+                return {
+                    id: String(row.id),
+                    title: row.title,
+                    completed: !!row.completed,
+                    createdAt: row.created_at,
+                    completedAt: row.completed_at || null,
+                    dueDate: row.due_date || null,
+                    priority: row.priority || 'medium',
+                    tags: row.tags ? row.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                    goalId: row.goal_id !== null && row.goal_id !== undefined ? String(row.goal_id) : null
+                };
+            }
+            function taskToDB(task) {
+                return {
+                    title: task.title,
+                    completed: task.completed,
+                    due_date: task.dueDate || null,
+                    priority: task.priority || 'medium',
+                    tags: (task.tags || []).join(','),
+                    goal_id: task.goalId ? Number(task.goalId) : null,
+                    completed_at: task.completedAt || null
+                };
+            }
+            function goalFromDB(row) {
+                return {
+                    id: String(row.id),
+                    title: row.title,
+                    period: row.period,
+                    periodStart: row.period_start,
+                    createdAt: row.created_at
+                };
+            }
+            function goalToDB(goal) {
+                return {
+                    title: goal.title,
+                    period: goal.period,
+                    period_start: goal.periodStart
+                };
+            }
+
+            // Fetch everything from Supabase; returns true on success, false on failure
+            async function loadFromSupabase() {
+                if (!db) return false;
+                try {
+                    const [{ data: taskRows, error: taskErr }, { data: goalRows, error: goalErr }] = await Promise.all([
+                        db.from('tasks').select('*').order('created_at', { ascending: true }),
+                        db.from('goals').select('*').order('created_at', { ascending: true })
+                    ]);
+                    if (taskErr || goalErr) throw (taskErr || goalErr);
+                    state.tasks = (taskRows || []).map(taskFromDB);
+                    state.goals = (goalRows || []).map(goalFromDB);
+                    return true;
+                } catch (e) {
+                    console.error('Supabase load failed, falling back to localStorage:', e);
+                    return false;
+                }
+            }
+
+            // Load state safely on startup
+            function loadState() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed) {
+                            state.tasks = parsed.tasks || [];
+                            state.goals = parsed.goals || [];
+                            state.nlpEnabled = !!parsed.nlpEnabled;
+                            state.theme = parsed.theme || 'dark';
+                            state.activeFilter = parsed.activeFilter || 'all';
+                            state.activeTagFilter = parsed.activeTagFilter || null;
+                        }
+                    }
+                } catch (e) {
+                    console.error("Corrupted localStorage. Resetting back to default values.", e);
+                    state.tasks = [];
+                    state.goals = [];
+                }
+            }
+
+            // Save state safely
+            function saveState() {
+                try {
+                    const dataToSave = {
+                        tasks: state.tasks,
+                        goals: state.goals,
+                        nlpEnabled: state.nlpEnabled,
+                        theme: state.theme,
+                        activeFilter: state.activeFilter,
+                        activeTagFilter: state.activeTagFilter
+                    };
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                } catch (e) {
+                    console.error("Failed to write to localStorage:", e);
+                }
+            }
+
+            // ==========================================================================
+            // DATE & CALENDAR TIME METRICS
+            // ==========================================================================
+            function toLocalDateString(dateObj) {
+                const year = dateObj.getFullYear();
+                const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+                const day = String(dateObj.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            function parseLocalDate(dateStr) {
+                if (!dateStr) return null;
+                if (dateStr.includes('T')) {
+                    return new Date(dateStr);
+                }
+                // YYYY-MM-DD
+                const parts = dateStr.split('-');
+                return new Date(parts[0], parts[1] - 1, parts[2]);
+            }
+
+            function getStartOfWeek(dateObj) {
+                const date = new Date(dateObj);
+                const day = date.getDay();
+                // Adjust so week starts on Monday
+                const diff = date.getDate() - day + (day === 0 ? -6 : 1);
+                const start = new Date(date.setDate(diff));
+                start.setHours(0, 0, 0, 0);
+                return toLocalDateString(start);
+            }
+
+            function getStartOfMonth(dateObj) {
+                const date = new Date(dateObj);
+                const start = new Date(date.getFullYear(), date.getMonth(), 1);
+                return toLocalDateString(start);
+            }
+
+            function isCurrentPeriod(goal) {
+                const now = new Date();
+                if (goal.period === 'week') {
+                    return goal.periodStart === getStartOfWeek(now);
+                } else if (goal.period === 'month') {
+                    return goal.periodStart === getStartOfMonth(now);
+                }
+                return false;
+            }
+
+            function isOverdue(dueDateStr) {
+                if (!dueDateStr) return false;
+                const due = parseLocalDate(dueDateStr);
+                if (!due) return false;
+
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                // If due date does not have time, compare date-only
+                if (!dueDateStr.includes('T')) {
+                    due.setHours(0, 0, 0, 0);
+                    return due < today;
+                }
+
+                // If due date has time, compare exact times
+                return due < new Date();
+            }
+
+            // ==========================================================================
+            // 2. STRETCH: NATURAL LANGUAGE PROCESSING (NLP) CAPTURE
+            // ==========================================================================
+            function parseLocally(text) {
+                let title = text;
+                let dueDate = null;
+                let priority = null;
+                let tags = [];
+                let hour = null;
+                let minute = 0;
+
+                // 1. Parse priority modifiers: !high, !medium, !low, #high, #medium, #low
+                const priorityRegex = /(?:\!|#)(high|medium|low)\b/gi;
+                let match;
+                while ((match = priorityRegex.exec(text)) !== null) {
+                    priority = match[1].toLowerCase();
+                    title = title.replace(match[0], '');
+                }
+
+                // 2. Parse tag modifiers: #tagname (ignoring priority/date terms to avoid clash)
+                const tagRegex = /#([a-zA-Z0-9_\-]+)/g;
+                const excludedTerms = ['high', 'medium', 'low', 'today', 'tomorrow', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
+                while ((match = tagRegex.exec(text)) !== null) {
+                    const tagValue = match[1].toLowerCase();
+                    if (!excludedTerms.includes(tagValue)) {
+                        tags.push(tagValue);
+                        title = title.replace(match[0], '');
+                    }
+                }
+
+                // 3. Parse time modifiers: e.g. "3pm", "3:30pm", "15:00", "at 10am"
+                const regex12h = /\b(?:at\s+)?(\d{1,2})(?::(\d{2}))?\s*(am|pm)\b/gi;
+                let timeMatch = regex12h.exec(title);
+                if (timeMatch) {
+                    let h = parseInt(timeMatch[1], 10);
+                    const m = timeMatch[2] ? parseInt(timeMatch[2], 10) : 0;
+                    const ampm = timeMatch[3].toLowerCase();
+                    if (ampm === 'pm' && h < 12) h += 12;
+                    if (ampm === 'am' && h === 12) h = 0;
+                    hour = h;
+                    minute = m;
+                    title = title.replace(timeMatch[0], '');
+                } else {
+                    const regex24h = /\b(?:at\s+)?(\d{1,2}):(\d{2})\b/gi;
+                    timeMatch = regex24h.exec(title);
+                    if (timeMatch) {
+                        const h = parseInt(timeMatch[1], 10);
+                        const m = parseInt(timeMatch[2], 10);
+                        if (h >= 0 && h < 24 && m >= 0 && m < 60) {
+                            hour = h;
+                            minute = m;
+                            title = title.replace(timeMatch[0], '');
+                        }
+                    }
+                }
+
+                // 4. Parse date modifiers: "today", "tomorrow"
+                const today = new Date();
+                const dateRegex = /\b(today|tomorrow)\b/gi;
+                let dateParsed = false;
+                let parsedDateStr = null;
+                if ((match = dateRegex.exec(title)) !== null) {
+                    const term = match[1].toLowerCase();
+                    if (term === 'today') {
+                        parsedDateStr = toLocalDateString(today);
+                    } else if (term === 'tomorrow') {
+                        const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                        parsedDateStr = toLocalDateString(tomorrow);
+                    }
+                    title = title.replace(match[0], '');
+                    dateParsed = true;
+                }
+
+                // 5. Parse days of the week: (next)? (monday|tuesday...)
+                if (!dateParsed) {
+                    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+                    const daysShort = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+                    const dayOfWeekRegex = /\b(next\s+)?(sunday|monday|tuesday|wednesday|thursday|friday|saturday|sun|mon|tue|wed|thu|fri|sat)\b/gi;
+                    if ((match = dayOfWeekRegex.exec(title)) !== null) {
+                        const isNext = !!match[1];
+                        const dayName = match[2].toLowerCase();
+                        let targetDay = days.indexOf(dayName);
+                        if (targetDay === -1) {
+                            targetDay = daysShort.indexOf(dayName);
+                        }
+                        if (targetDay !== -1) {
+                            let daysToAdd = targetDay - today.getDay();
+                            if (daysToAdd <= 0) daysToAdd += 7; // Target next week's day if it's already past/today
+                            if (isNext && dayName !== today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase()) {
+                                daysToAdd += 7;
+                            }
+                            const targetDate = new Date(today.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+                            parsedDateStr = toLocalDateString(targetDate);
+                            title = title.replace(match[0], '');
+                            dateParsed = true;
+                        }
+                    }
+                }
+
+                // Combine date and time
+                if (dateParsed && parsedDateStr) {
+                    if (hour !== null) {
+                        const padHour = String(hour).padStart(2, '0');
+                        const padMin = String(minute).padStart(2, '0');
+                        dueDate = `${parsedDateStr}T${padHour}:${padMin}`;
+                    } else {
+                        dueDate = parsedDateStr;
+                    }
+                } else if (hour !== null) {
+                    const parsedDateStr = toLocalDateString(today);
+                    const padHour = String(hour).padStart(2, '0');
+                    const padMin = String(minute).padStart(2, '0');
+                    dueDate = `${parsedDateStr}T${padHour}:${padMin}`;
+                }
+
+                // Clean up titles (removes double spacing & orphan punctuation)
+                title = title.replace(/\s+/g, ' ').trim();
+
+                return { title, dueDate, priority, tags };
+            }
+
+            async function parseWithLLM(text) {
+                const apiKey = localStorage.getItem('ANTHROPIC_API_KEY');
+                if (!apiKey) {
+                    console.warn("No Anthropic API key found. Falling back to local regex parser.");
+                    return parseLocally(text);
+                }
+                try {
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'dangerously-allow-the-browser': 'true'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-3-5-sonnet-20241022',
+                            max_tokens: 300,
+                            messages: [{
+                                role: 'user',
+                                content: `Parse the following task details. Give back ONLY standard JSON containing:
+                            { "title": string, "dueDate": "YYYY-MM-DD" or "YYYY-MM-DDTHH:mm" or null, "priority": "low"|"medium"|"high" or null, "tags": string[] }
+                            Task text: "${text}"`
+                            }]
+                        })
+                    });
+                    const data = await response.json();
+                    const textOutput = data.content[0].text;
+                    const jsonMatch = textOutput.match(/\{[\s\S]*\}/);
+                    if (jsonMatch) {
+                        return JSON.parse(jsonMatch[0]);
+                    }
+                } catch (err) {
+                    console.error("LLM Service unavailable, falling back to local processing", err);
+                }
+                return parseLocally(text);
+            }
+
+            // ==========================================================================
+            // 3. RENDER LAYER (DOM SYNCHRONIZATION)
+            // ==========================================================================
+            function getFilteredAndSortedTasks() {
+                let list = [...state.tasks];
+
+                // Filter 1: Status Tab
+                if (state.activeFilter === 'active') {
+                    list = list.filter(t => !t.completed);
+                } else if (state.activeFilter === 'completed') {
+                    list = list.filter(t => t.completed);
+                }
+
+                // Filter 2: Clicked Tag Filter
+                if (state.activeTagFilter) {
+                    list = list.filter(t => t.tags.includes(state.activeTagFilter));
+                }
+
+                // Sort logic:
+                list.sort((a, b) => {
+                    if (a.completed !== b.completed) {
+                        return a.completed ? 1 : -1;
+                    }
+
+                    if (!a.completed) {
+                        // Both active
+                        if (a.dueDate && b.dueDate) {
+                            const diff = new Date(a.dueDate) - new Date(b.dueDate);
+                            if (diff !== 0) return diff;
+                        } else if (a.dueDate) {
+                            return -1;
+                        } else if (b.dueDate) {
+                            return 1;
+                        }
+
+                        // Priority weight
+                        const weights = { high: 3, medium: 2, low: 1 };
+                        const weightA = weights[a.priority] || 2;
+                        const weightB = weights[b.priority] || 2;
+                        if (weightA !== weightB) return weightB - weightA;
+
+                        // Creation date desc
+                        return new Date(b.createdAt) - new Date(a.createdAt);
+                    } else {
+                        // Both completed
+                        const timeA = a.completedAt ? new Date(a.completedAt) : new Date(a.createdAt);
+                        const timeB = b.completedAt ? new Date(b.completedAt) : new Date(b.createdAt);
+                        return timeB - timeA;
+                    }
+                });
+
+                return list;
+            }
+
+            function getGoalProgress(goalId) {
+                const linked = state.tasks.filter(t => t.goalId === goalId);
+                const total = linked.length;
+                const completed = linked.filter(t => t.completed).length;
+                return {
+                    completed,
+                    total,
+                    percent: total > 0 ? Math.round((completed / total) * 100) : 0
+                };
+            }
+
+            function render() {
+                renderTheme();
+                renderGoalsDropdown();
+                renderGoalsPanel();
+                renderActiveTagFilter();
+                renderTaskList();
+            }
+
+            function renderTheme() {
+                if (state.theme === 'light') {
+                    document.body.classList.add('light-theme');
+                    document.body.classList.remove('dark-theme');
+                    document.getElementById('theme-toggle').innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                `;
+                } else {
+                    document.body.classList.add('dark-theme');
+                    document.body.classList.remove('light-theme');
+                    document.getElementById('theme-toggle').innerHTML = `
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                `;
+                }
+            }
+
+            function renderGoalsDropdown() {
+                const dropdown = document.getElementById('task-goal-input');
+                const currentValue = dropdown.value;
+                const currentGoals = state.goals.filter(isCurrentPeriod);
+                let html = '<option value="">No Goal</option>';
+                currentGoals.forEach(goal => {
+                    const periodLabel = goal.period === 'week' ? 'Weekly' : 'Monthly';
+                    html += `<option value="${goal.id}">${periodLabel}: ${escapeHtml(goal.title)}</option>`;
+                });
+                dropdown.innerHTML = html;
+                dropdown.value = currentValue;
+            }
+
+            function renderGoalsPanel() {
+                const weeklyList = document.getElementById('weekly-goals-list');
+                const monthlyList = document.getElementById('monthly-goals-list');
+                if (!weeklyList || !monthlyList) return;
+
+                const currentGoals = state.goals.filter(isCurrentPeriod);
+                const weeklyGoals = currentGoals.filter(g => g.period === 'week');
+                const monthlyGoals = currentGoals.filter(g => g.period === 'month');
+
+                // Render Weekly Goals
+                if (weeklyGoals.length === 0) {
+                    weeklyList.innerHTML = `<li style="font-size: 0.85rem; color: var(--text-muted); padding: 0.25rem 0; font-style: italic;">No weekly goals set.</li>`;
+                } else {
+                    let html = '';
+                    weeklyGoals.forEach(goal => {
+                        const progress = getGoalProgress(goal.id);
+                        const progressText = progress.total > 0 ? `<span style="font-size: 0.8rem; color: var(--text-muted); flex-shrink: 0; margin-left: 0.5rem;">(${progress.completed} of ${progress.total})</span>` : '';
+                        html += `
+                            <li class="goal-item-v2" data-id="${goal.id}">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0; flex-grow: 1;">
+                                    <span class="goal-bullet" onclick="deleteGoal('${goal.id}')" title="Delete goal"></span>
+                                    <span class="goal-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; cursor: pointer;" onclick="deleteGoal('${goal.id}')" title="Click to delete goal">${escapeHtml(goal.title)}</span>
+                                </div>
+                                ${progressText}
+                            </li>
+                        `;
+                    });
+                    weeklyList.innerHTML = html;
+                }
+
+                // Render Monthly Goals
+                if (monthlyGoals.length === 0) {
+                    monthlyList.innerHTML = `<li style="font-size: 0.85rem; color: var(--text-muted); padding: 0.25rem 0; font-style: italic;">No monthly goals set.</li>`;
+                } else {
+                    let html = '';
+                    monthlyGoals.forEach(goal => {
+                        const progress = getGoalProgress(goal.id);
+                        const progressText = progress.total > 0 ? `<span style="font-size: 0.8rem; color: var(--text-muted); flex-shrink: 0; margin-left: 0.5rem;">(${progress.completed} of ${progress.total})</span>` : '';
+                        html += `
+                            <li class="goal-item-v2" data-id="${goal.id}">
+                                <div style="display: flex; align-items: center; gap: 0.5rem; min-width: 0; flex-grow: 1;">
+                                    <span class="goal-bullet" onclick="deleteGoal('${goal.id}')" title="Delete goal"></span>
+                                    <span class="goal-title-text" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex-grow: 1; cursor: pointer;" onclick="deleteGoal('${goal.id}')" title="Click to delete goal">${escapeHtml(goal.title)}</span>
+                                </div>
+                                ${progressText}
+                            </li>
+                        `;
+                    });
+                    monthlyList.innerHTML = html;
+                }
+            }
+
+            function showInlineGoalInput(period) {
+                const container = document.getElementById(`add-${period}-goal-trigger-container`);
+                if (!container) return;
+                container.innerHTML = `
+                    <form onsubmit="handleInlineGoalSubmit(event, '${period}')" style="display: flex; width: 100%; margin-top: 0.25rem;">
+                        <input type="text" id="inline-${period}-goal-input" placeholder="Set a new goal..." required maxlength="40" style="width: 100%; background: var(--input-bg); border: 1px solid var(--accent-primary); color: var(--text-primary); padding: 0.35rem 0.5rem; border-radius: var(--radius-sm); font-size: 0.85rem; outline: none;">
+                    </form>
+                `;
+                const input = document.getElementById(`inline-${period}-goal-input`);
+                if (input) {
+                    input.focus();
+                    input.addEventListener('blur', () => {
+                        setTimeout(() => {
+                            if (document.activeElement !== input) {
+                                restoreInlineGoalTrigger(period);
+                            }
+                        }, 150);
+                    });
+                }
+            }
+
+            function restoreInlineGoalTrigger(period) {
+                const container = document.getElementById(`add-${period}-goal-trigger-container`);
+                if (container) {
+                    container.innerHTML = `
+                        <button class="add-inline-goal-btn" onclick="showInlineGoalInput('${period}')">
+                            [+ add ${period} goal]
+                        </button>
+                    `;
+                }
+            }
+
+            function handleInlineGoalSubmit(e, period) {
+                e.preventDefault();
+                const input = document.getElementById(`inline-${period}-goal-input`);
+                if (input && input.value.trim()) {
+                    addGoal(input.value, period);
+                    restoreInlineGoalTrigger(period);
+                }
+            }
+
+            function renderActiveTagFilter() {
+                const container = document.getElementById('active-tag-banner-container');
+                if (state.activeTagFilter) {
+                    container.innerHTML = `
+                    <div class="active-tag-banner">
+                        <span>Tag: #${escapeHtml(state.activeTagFilter)}</span>
+                        <button class="clear-tag-btn" onclick="clearTagFilter()" title="Clear tag filter">✕</button>
+                    </div>
+                `;
+                } else {
+                    container.innerHTML = '';
+                }
+            }
+
+            function renderTaskList() {
+                const container = document.getElementById('task-list-element');
+                const tasks = getFilteredAndSortedTasks();
+                if (tasks.length === 0) {
+                    container.innerHTML = `<div class="empty-state"><h3>No Tasks Found</h3></div>`;
+                    return;
+                }
+                let html = '';
+                tasks.forEach((task, index) => {
+                    const isSelected = index === state.selectedTaskIndex;
+                    const isEditing = task.id === state.editingTaskId;
+                    const overdue = isOverdue(task.dueDate) && !task.completed;
+                    const goal = state.goals.find(g => g.id === task.goalId);
+                    const prioText = task.priority.charAt(0).toUpperCase() + task.priority.slice(1);
+
+                    let dateBadgeHtml = '';
+                    if (task.dueDate) {
+                        const formattedDate = formatDateString(task.dueDate);
+                        dateBadgeHtml = `<span class="badge date-badge ${overdue ? 'overdue' : ''}">${formattedDate}</span>`;
+                    }
+                    const goalBadgeHtml = goal ? `<span class="badge goal-link-badge">🎯 ${escapeHtml(goal.title)}</span>` : '';
+                    let tagsHtml = '';
+                    if (task.tags && task.tags.length > 0) {
+                        task.tags.forEach(tag => {
+                            tagsHtml += `<span class="badge tag-badge" onclick="setTagFilter('${escapeHtml(tag)}'); event.stopPropagation();">#${escapeHtml(tag)}</span>`;
+                        });
+                    }
+
+                    if (isEditing) {
+                        const currentGoals = state.goals.filter(isCurrentPeriod);
+                        let goalOptions = '<option value="">No Goal</option>';
+                        currentGoals.forEach(g => {
+                            const label = g.period === 'week' ? 'Weekly' : 'Monthly';
+                            goalOptions += `<option value="${g.id}" ${task.goalId === g.id ? 'selected' : ''}>${label}: ${escapeHtml(g.title)}</option>`;
+                        });
+                        const dateVal = task.dueDate ? task.dueDate.split('T')[0] : '';
+                        html += `
+                        <li class="task-row editing ${isSelected ? 'keyboard-focused' : ''}" data-id="${task.id}" onclick="event.stopPropagation();">
+                            <div><label class="checkbox-container" style="pointer-events: none; opacity: 0.5;"><input type="checkbox" disabled><span class="checkmark"></span></label></div>
+                            <div class="task-content-col">
+                                <div class="task-title-row">
+                                    <input type="text" class="inline-edit-input" id="edit-title-${task.id}" value="${escapeHtml(task.title)}" onkeydown="handleEditKeydown(event, '${task.id}')">
+                                </div>
+                                <div class="task-meta-row" style="margin-top: 0.5rem;">
+                                    <select id="edit-priority-${task.id}" class="option-field" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; min-height: 28px; height: 28px;" onkeydown="handleEditKeydown(event, '${task.id}')">
+                                        <option value="low" ${task.priority === 'low' ? 'selected' : ''}>Low</option>
+                                        <option value="medium" ${task.priority === 'medium' ? 'selected' : ''}>Medium</option>
+                                        <option value="high" ${task.priority === 'high' ? 'selected' : ''}>High</option>
+                                    </select>
+                                    <input type="date" id="edit-date-${task.id}" class="option-field" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; min-height: 28px; height: 28px;" value="${dateVal}" onkeydown="handleEditKeydown(event, '${task.id}')">
+                                    <select id="edit-goal-${task.id}" class="option-field" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; min-height: 28px; height: 28px; max-width: 120px;" onkeydown="handleEditKeydown(event, '${task.id}')">${goalOptions}</select>
+                                    <input type="text" id="edit-tags-${task.id}" class="option-field tags-field" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; min-height: 28px; height: 28px; flex-grow: 1;" value="${task.tags ? task.tags.join(', ') : ''}" onkeydown="handleEditKeydown(event, '${task.id}')">
+                                </div>
+                            </div>
+                            <div class="task-actions-col" onclick="event.stopPropagation();">
+                                <button class="task-action-btn" onclick="saveTaskChanges('${task.id}')" title="Save changes" style="opacity: 1; color: var(--prio-low);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></button>
+                                <button class="task-action-btn" onclick="cancelEditing()" title="Cancel editing" style="opacity: 1; color: var(--prio-high);"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                            </div>
+                        </li>
+                    `;
+                    } else {
+                        html += `
+                        <li class="task-row ${task.completed ? 'completed' : ''} ${isSelected ? 'keyboard-focused' : ''}" data-id="${task.id}" onclick="handleRowClick(event, '${task.id}')">
+                            <div><label class="checkbox-container" onclick="event.stopPropagation();"><input type="checkbox" ${task.completed ? 'checked' : ''} onchange="toggleTask('${task.id}')"><span class="checkmark"></span></label></div>
+                            <div class="task-content-col">
+                                <div class="task-title-row"><span class="task-title" onclick="startEditingTask('${task.id}'); event.stopPropagation();">${escapeHtml(task.title)}</span></div>
+                                <div class="task-meta-row"><span class="badge prio-badge"><span class="prio-dot ${task.priority}"></span>${prioText}</span>${dateBadgeHtml}${goalBadgeHtml}${tagsHtml}</div>
+                            </div>
+                            <div class="task-actions-col" onclick="event.stopPropagation();">
+                                <button class="task-action-btn" onclick="startEditingTask('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 1 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg></button>
+                                <button class="task-action-btn delete-btn" onclick="deleteTask('${task.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></button>
+                            </div>
+                        </li>
+                    `;
+                    }
+                });
+                container.innerHTML = html;
+                if (state.editingTaskId) {
+                    const el = document.getElementById(`edit-title-${state.editingTaskId}`);
+                    if (el) { el.focus(); el.value = el.value; }
+                }
+            }
+
+            // ==========================================================================
+            // 4. CRUD OPERATIONS (MUTATE STATE & REDRAW)
+            // ==========================================================================
+            async function addGoal(title, period) {
+                if (state.editingTaskId) saveTaskChanges(state.editingTaskId);
+                const now = new Date();
+                const periodStart = period === 'week' ? getStartOfWeek(now) : getStartOfMonth(now);
+                const count = state.goals.filter(g => g.period === period && isCurrentPeriod(g)).length;
+                if (count >= 5) {
+                    const w = document.getElementById('goal-limit-warning');
+                    w.style.display = 'block';
+                    setTimeout(() => { w.style.display = 'none'; }, 4000);
+                    return;
+                }
+                const newGoal = { title: title.trim(), period, periodStart, createdAt: now.toISOString() };
+                if (db) {
+                    try {
+                        const { data, error } = await db.from('goals').insert(goalToDB(newGoal)).select().single();
+                        if (error) throw error;
+                        state.goals.push(goalFromDB(data));
+                    } catch (e) {
+                        console.error('Supabase insert (goal) failed, saving locally only:', e);
+                        state.goals.push({ id: 'goal_' + Date.now(), ...newGoal });
+                    }
+                } else {
+                    state.goals.push({ id: 'goal_' + Date.now(), ...newGoal });
+                }
+                saveState(); render();
+            }
+
+            async function deleteGoal(id) {
+                if (state.editingTaskId) saveTaskChanges(state.editingTaskId);
+                state.tasks.forEach(t => { if (t.goalId === id) t.goalId = null; });
+                state.goals = state.goals.filter(g => g.id !== id);
+                if (db) {
+                    try { await db.from('goals').delete().eq('id', id); }
+                    catch (e) { console.error('Supabase delete (goal) failed:', e); }
+                }
+                saveState(); render();
+            }
+
+            async function addTask(title, dueDate, priority, tagsCsv, goalId) {
+                if (state.editingTaskId) saveTaskChanges(state.editingTaskId);
+                const cleanTitle = title.trim();
+                if (!cleanTitle) return;
+                const tags = [...new Set(tagsCsv.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0))];
+                const newTask = { title: cleanTitle, completed: false, createdAt: new Date().toISOString(), dueDate, priority: priority || 'medium', tags, goalId: goalId || null };
+                if (db) {
+                    try {
+                        const { data, error } = await db.from('tasks').insert(taskToDB(newTask)).select().single();
+                        if (error) throw error;
+                        state.tasks.push(taskFromDB(data));
+                    } catch (e) {
+                        console.error('Supabase insert (task) failed, saving locally only:', e);
+                        state.tasks.push({ id: 'task_' + Date.now(), ...newTask });
+                    }
+                } else {
+                    state.tasks.push({ id: 'task_' + Date.now(), ...newTask });
+                }
+                saveState(); state.selectedTaskIndex = -1; render();
+            }
+
+            async function toggleTask(id) {
+                if (state.editingTaskId) saveTaskChanges(state.editingTaskId);
+                const task = state.tasks.find(t => t.id === id);
+                if (!task) return;
+                task.completed = !task.completed;
+                task.completedAt = task.completed ? new Date().toISOString() : null;
+                saveState(); render();
+                if (db) {
+                    try {
+                        const { error } = await db.from('tasks').update({ completed: task.completed, completed_at: task.completedAt }).eq('id', id);
+                        if (error) throw error;
+                    } catch (e) { console.error('Supabase update (toggle) failed:', e); }
+                }
+            }
+
+            async function deleteTask(id) {
+                if (state.editingTaskId === id) state.editingTaskId = null;
+                else if (state.editingTaskId) saveTaskChanges(state.editingTaskId);
+                state.tasks = state.tasks.filter(t => t.id !== id);
+                saveState(); render();
+                if (db) {
+                    try { await db.from('tasks').delete().eq('id', id); }
+                    catch (e) { console.error('Supabase delete (task) failed:', e); }
+                }
+            }
+
+            function startEditingTask(id) {
+                if (state.editingTaskId && state.editingTaskId !== id) saveTaskChanges(state.editingTaskId);
+                state.editingTaskId = id; render();
+            }
+
+            function cancelEditing() { state.editingTaskId = null; render(); }
+
+            async function saveTaskChanges(id) {
+                if (state.editingTaskId !== id) return;
+                const task = state.tasks.find(t => t.id === id);
+                if (task) {
+                    const titleEl = document.getElementById(`edit-title-${id}`);
+                    const priorityEl = document.getElementById(`edit-priority-${id}`);
+                    const dateEl = document.getElementById(`edit-date-${id}`);
+                    const goalEl = document.getElementById(`edit-goal-${id}`);
+                    const tagsEl = document.getElementById(`edit-tags-${id}`);
+                    if (titleEl) task.title = titleEl.value.trim() || 'Untitled Task';
+                    if (priorityEl) task.priority = priorityEl.value;
+                    if (dateEl) {
+                        const val = dateEl.value;
+                        if (val) {
+                            if (task.dueDate && task.dueDate.includes('T')) {
+                                const p = task.dueDate.split('T');
+                                task.dueDate = val + 'T' + p[1];
+                            } else task.dueDate = val;
+                        } else task.dueDate = null;
+                    }
+                    if (goalEl) task.goalId = goalEl.value || null;
+                    if (tagsEl) task.tags = [...new Set(tagsEl.value.split(',').map(t => t.trim().toLowerCase()).filter(t => t.length > 0))];
+                    saveState();
+                    if (db) {
+                        try {
+                            const { error } = await db.from('tasks').update(taskToDB(task)).eq('id', id);
+                            if (error) throw error;
+                        } catch (e) { console.error('Supabase update (edit) failed:', e); }
+                    }
+                }
+                state.editingTaskId = null; render();
+            }
+
+            function setFilter(filter) {
+                state.activeFilter = filter; state.selectedTaskIndex = -1; saveState();
+                document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+                const btn = document.getElementById(`filter-${filter}`); if (btn) btn.classList.add('active');
+                render();
+            }
+
+            // Set tag filter
+            function setTagFilter(tag) { state.activeTagFilter = tag; state.selectedTaskIndex = -1; saveState(); render(); }
+            function clearTagFilter() { state.activeTagFilter = null; state.selectedTaskIndex = -1; saveState(); render(); }
+            function handleEditKeydown(e, id) { if (e.key === 'Enter') { e.preventDefault(); saveTaskChanges(id); } else if (e.key === 'Escape') { e.preventDefault(); cancelEditing(); } }
+
+            document.addEventListener('DOMContentLoaded', async () => {
+                const cloudLoaded = await loadFromSupabase();
+                if (!cloudLoaded) {
+                    loadState(); // localStorage fallback (also restores UI prefs like theme/filter)
+                } else {
+                    // Cloud data loaded — still restore local-only UI prefs (theme, filter, nlp toggle)
+                    try {
+                        const raw = localStorage.getItem(STORAGE_KEY);
+                        if (raw) {
+                            const parsed = JSON.parse(raw);
+                            state.nlpEnabled = !!parsed.nlpEnabled;
+                            state.theme = parsed.theme || 'dark';
+                            state.activeFilter = parsed.activeFilter || 'all';
+                            state.activeTagFilter = parsed.activeTagFilter || null;
+                        }
+                    } catch (e) { /* ignore, defaults are fine */ }
+                }
+                const titleInput = document.getElementById('task-title-input');
+                const dateInput = document.getElementById('task-due-date-input');
+                const priorityInput = document.getElementById('task-priority-input');
+                const goalInput = document.getElementById('task-goal-input');
+                const tagsInput = document.getElementById('task-tags-input');
+                const nlpToggle = document.getElementById('nlp-toggle');
+                const nlpBadge = document.getElementById('nlp-badge');
+                if (state.nlpEnabled) { nlpToggle.classList.add('active'); nlpBadge.style.display = 'block'; }
+                document.querySelectorAll('.filter-tab').forEach(btn => btn.classList.remove('active'));
+                const loadedBtn = document.getElementById(`filter-${state.activeFilter}`); if (loadedBtn) loadedBtn.classList.add('active');
+                document.addEventListener('click', (e) => {
+                    if (!state.editingTaskId) return;
+                    const row = document.querySelector(`.task-row[data-id="${state.editingTaskId}"]`);
+                    if (row && !row.contains(e.target) && e.target.tagName !== 'OPTION') saveTaskChanges(state.editingTaskId);
+                });
+                document.getElementById('theme-toggle').addEventListener('click', () => { state.theme = state.theme === 'dark' ? 'light' : 'dark'; saveState(); render(); });
+                titleInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        let t = titleInput.value, d = dateInput.value, p = priorityInput.value, tags = tagsInput.value;
+                        if (state.nlpEnabled) {
+                            const pr = parseLocally(t); t = pr.title; if (pr.dueDate) d = pr.dueDate; if (pr.priority) p = pr.priority;
+                            if (pr.tags.length > 0) {
+                                const current = tags ? tags.split(',').map(x => x.trim().toLowerCase()) : [];
+                                tags = [...new Set([...current, ...pr.tags])].filter(x => x).join(', ');
+                            }
+                        }
+                        if (!t.trim()) return;
+                        addTask(t, d, p, tags, goalInput.value); titleInput.value = ''; dateInput.value = ''; priorityInput.value = 'medium'; goalInput.value = ''; tagsInput.value = ''; titleInput.focus();
+                    }
+                });
+                titleInput.addEventListener('input', () => {
+                    if (state.nlpEnabled) {
+                        const pr = parseLocally(titleInput.value);
+                        if (pr.dueDate) dateInput.value = pr.dueDate.split('T')[0];
+                        if (pr.priority) priorityInput.value = pr.priority;
+                        if (pr.tags.length > 0) tagsInput.value = pr.tags.join(', ');
+                    }
+                });
+                nlpToggle.addEventListener('click', () => {
+                    state.nlpEnabled = !state.nlpEnabled; saveState();
+                    if (state.nlpEnabled) {
+                        nlpToggle.classList.add('active'); nlpBadge.style.display = 'block';
+                        const pr = parseLocally(titleInput.value);
+                        if (pr.dueDate) dateInput.value = pr.dueDate.split('T')[0];
+                        if (pr.priority) priorityInput.value = pr.priority;
+                        if (pr.tags.length > 0) tagsInput.value = pr.tags.join(', ');
+                    }
+                    else { nlpToggle.classList.remove('active'); nlpBadge.style.display = 'none'; }
+                });
+                window.addEventListener('keydown', (e) => {
+                    const isW = ['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement.tagName);
+                    if (isW) { if (e.key === 'Escape') { document.activeElement.blur(); cancelEditing(); } return; }
+                    if (e.key === '/' || e.key === 'n') { e.preventDefault(); titleInput.focus(); }
+                    const ts = getFilteredAndSortedTasks(); if (ts.length === 0) return;
+                    if (e.key === 'ArrowDown') { e.preventDefault(); state.selectedTaskIndex = (state.selectedTaskIndex + 1) % ts.length; render(); }
+                    else if (e.key === 'ArrowUp') { e.preventDefault(); state.selectedTaskIndex = (state.selectedTaskIndex - 1 + ts.length) % ts.length; render(); }
+                    else if (e.key === 'Enter' && state.selectedTaskIndex >= 0) toggleTask(ts[state.selectedTaskIndex].id);
+                    else if (e.key === 'Delete' && state.selectedTaskIndex >= 0) deleteTask(ts[state.selectedTaskIndex].id);
+                    else if (e.key === 'e' && state.selectedTaskIndex >= 0) startEditingTask(ts[state.selectedTaskIndex].id);
+                });
+                render();
+            });
+
+            function escapeHtml(str) { return str ? str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : ''; }
+            function formatDateString(dateStr) {
+                if (!dateStr) return '';
+                const hasTime = dateStr.includes('T');
+                const d = parseLocalDate(dateStr);
+                if (!d || isNaN(d.getTime())) return dateStr;
+                const opt = { month: 'short', day: 'numeric' };
+                if (hasTime) { opt.hour = 'numeric'; opt.minute = '2-digit'; }
+                return d.toLocaleDateString(undefined, opt);
+            }
+        </script>
+</body>
+
+</html>
